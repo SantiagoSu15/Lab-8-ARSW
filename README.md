@@ -295,9 +295,19 @@ se verifican los secretos configurados en el repositorio de GitHub necesarios pa
 ### diagrama de secuencia
 <img width="1440" height="1770" alt="image" src="https://github.com/user-attachments/assets/b328df32-81c4-45e1-ad19-fc5a8f865635" />
 
+## preguntas de reflexion
+### ¿Por qué L4 LB vs Application Gateway (L7)?
 
+El Azure Load Balancer (L4) opera a nivel de transporte, es decir balancea conexiones TCP/UDP sin inspeccionar el contenido HTTP. dado que el objetivo es distribuir tráfico simple entre VMs que sirven páginas estáticas con nginx, la latencia es mínima al no parsear cabeceras HTTP, el costo es mucho menor, y la configuración es más simple. El Application Gateway (L7) opera a nivel de aplicación e inspecciona cada petición HTTP/HTTPS. El trade-off es que cuesta entre 3x y 5x más que un LB básico y añade latencia de procesamiento.
 
+### Implicaciones de seguridad de exponer 22/TCP
 
+Exponer SSH a Internet, tiene varios factores de riesgo. Primero, las IPs  suelen ser dinámicas, si se cambia la IP sin actualizar el NSG, o si se define 0.0.0.0/0 por error, las VMs quedan expuestas a ataques de fuerza bruta automatizados que escanean el rango completo de Internet en minutos. Segundo, si la clave privada SSH se compromete, el atacante tiene acceso root directo. Tercero, la superficie de ataque incluye vulnerabilidades en el propio daemon OpenSSH.
 
+### mejoras para produccion
 
+Resiliencia: La arquitectura actual tiene un punto crítico, si una VM falla durante el arranque de nginx el health probe la saca del pool pero no la reemplaza. En producción se podria usar  un VM Scale Set (VMSS) que detecta instancias no saludables y las reemplaza sin intervención humana. 
 
+Autoscaling: Con VMSS se configuraría escalado automático basado en métricas, por ejemplo, añadir instancias cuando el CPU promedio supera el 70% durante 5 minutos, y reducirlas cuando baja del 30% durante 10 minutos. Esto elimina el vm_count fijo del tfvars y adapta el costo al tráfico real. Para el pipeline de CI/CD, el apply dejaría de ser un workflow_dispatch manual y pasaría a ejecutarse automáticamente en merges a main con un stage de aprobación en GitHub Environments.
+
+Observabilidad: no se tiene visibilidad de lo que ocurre dentro de las VMs una vez desplegadas. En producción se instalaría el Azure Monitor Agent vía extensión de Terraform para recolectar logs de nginx y métricas de CPU, memoria y disco hacia un Log Analytics Workspace. Sobre eso se construirían alertas, si el health probe de más de una VM falla simultáneamente se dispara una alerta crítica, y si el costo del Resource Group supera un umbral mensual se activa un Budget Alert. El dashboard de Azure Monitor mostraría en tiempo real la distribución de tráfico entre instancias, permitiendo validar visualmente que el balanceo funciona antes de hacer terraform destroy.
