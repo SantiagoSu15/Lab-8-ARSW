@@ -217,6 +217,78 @@ terraform destroy -var-file=env/dev.tfvars
 - ¿Qué mejoras harías si esto fuera **producción**? (resiliencia, autoscaling, observabilidad).
 
 ---
+## desarrollo del laboratorio
 
-## Créditos y material de referencia
-- Azure, Terraform, IaC, LB y VMSS (docs oficiales) — revisa enlaces en clase.
+<img width="1600" height="575" alt="image" src="https://github.com/user-attachments/assets/3d3ee046-e9ff-47b5-8475-efacec3f2b84" />
+
+se realiza la instalacion del azure CLI
+
+<img width="636" height="296" alt="image" src="https://github.com/user-attachments/assets/1204bdfd-87ad-4179-8d5f-d4f3a3e8ee49" />
+
+verificacion de las versiones de azure y terrraform
+
+<img width="676" height="450" alt="image" src="https://github.com/user-attachments/assets/463b61aa-5d75-491b-aaad-85592de119ae" />
+
+se genera el par de claves publicas y privadas ssh
+
+<img width="914" height="505" alt="image" src="https://github.com/user-attachments/assets/ec8028b4-a097-4fd8-82e3-a9c60b0966c7" />
+
+<img width="1600" height="843" alt="image" src="https://github.com/user-attachments/assets/ee613835-0d99-411a-b840-833906c0c129" />
+
+<img width="1600" height="281" alt="image" src="https://github.com/user-attachments/assets/c39fbc61-c0a9-4384-ab98-79fa1c5b8414" />
+
+se definen variables de entorno (SUFFIX, LOCATION, RG, STO, CONTAINER) que permiten generar nombres únicos para los recursos. Luego se ejecuta el comando az group create para crear un Resource Group llamado rg-tfstate-lab8 en la región eastus.
+
+Después, se crea una cuenta de almacenamiento (az storage account create) con cifrado habilitado para guardar archivos de forma segura. por ultimo se crea un contenedor (az storage container create) llamado tfstate dentro de esa cuenta, que será el lugar donde Terraform almacenará el archivo de estado del proyecto.
+
+```bash
+resource_group_name  = "rg-tfstate-lab8"
+storage_account_name = "sttfstate1445"
+container_name       = "tfstate"
+key                  = "lab8/terraform.tfstate"
+
+
+
+prefix   = "lab8"
+location = "eastus"
+vm_count = 2
+admin_username = "student"
+ssh_public_key = "~/.ssh/id_ed25519.pub"
+allow_ssh_from_cidr = "181.63.150.68/32"
+tags = { owner = "alias", course = "ARSW", env = "dev", expires = "2025-12-31" }
+```
+se realiza la configuracion de terraform para definir dónde se guardará el estado de la infraestructura y algunos parámetros de despliegue de máquinas virtuales en Azure
+
+<img width="738" height="591" alt="image" src="https://github.com/user-attachments/assets/fc993a7c-d7fa-4e78-9013-c62527680cdf" />
+<img width="714" height="194" alt="image" src="https://github.com/user-attachments/assets/6a16692f-4ace-4cfa-b1cb-2c72264f342a" />
+
+se inicializa y se valida terraform
+
+<img width="960" height="968" alt="image" src="https://github.com/user-attachments/assets/059be2b9-6724-47ed-bd7f-f91a130a1ea0" />
+<img width="797" height="894" alt="image" src="https://github.com/user-attachments/assets/fefe776c-e1c6-4f47-a8d9-4df1894a0900" />
+<img width="1600" height="329" alt="image" src="https://github.com/user-attachments/assets/fdbb6db7-7f20-4a11-9ced-6c8df29fb77e" />
+
+se realiza y ejecuta el plan de terraform para la creacion de recursos
+
+<img width="1600" height="326" alt="image" src="https://github.com/user-attachments/assets/083a1afb-7783-4403-b938-d6352506c640" />
+<img width="928" height="248" alt="image" src="https://github.com/user-attachments/assets/ef9acfbf-1e43-4bf4-ad25-6fb34639930c" />
+
+se finaliza la creacion de las 2 maquinas virtuales y todos los demas recursos, tambien se realizan pruebas para verificar el funcionamiento del balanceador de carga
+
+<img width="901" height="713" alt="image" src="https://github.com/user-attachments/assets/fd97ce0c-244a-4885-966b-e2fbdc40b0f8" />
+<img width="1558" height="399" alt="image" src="https://github.com/user-attachments/assets/89f97249-8027-4483-80b0-1c75760d894b" />
+
+se crea un registro de aplicación en Azure Active Directory y se le dan permisos a la aplicación sobre la suscripción.
+
+<img width="730" height="167" alt="image" src="https://github.com/user-attachments/assets/ac890a3e-ee8b-4de9-ae7f-00505894436c" />
+
+se crea una credencial federada entre la aplicación de Azure AD y el repositorio de GitHub, lo que establece una relación de confianza entre GitHub Actions y Azure AD y Permite que los workflows de GitHub en el repositorio se autentiquen en Azure sin usar secretos
+
+<img width="991" height="338" alt="image" src="https://github.com/user-attachments/assets/9ec063b1-d9d7-4af1-b91a-a46fb12f06be" />
+
+se verifican los secretos configurados en el repositorio de GitHub necesarios para que GitHub Actions pueda autenticarse en Azure mediante OIDC.
+
+
+
+
+
