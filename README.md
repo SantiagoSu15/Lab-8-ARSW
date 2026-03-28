@@ -288,6 +288,15 @@ se crea una credencial federada entre la aplicación de Azure AD y el repositori
 
 se verifican los secretos configurados en el repositorio de GitHub necesarios para que GitHub Actions pueda autenticarse en Azure mediante OIDC.
 
+## diagramas
+### diagrama de componentes
+<img width="1440" height="1312" alt="image" src="https://github.com/user-attachments/assets/c8d38cf3-d1a4-40db-974c-5b754e02d071" />
+
+### diagrama de secuencia
+<img width="1440" height="1770" alt="image" src="https://github.com/user-attachments/assets/b328df32-81c4-45e1-ad19-fc5a8f865635" />
+
+
+
 
 
 
